@@ -32,3 +32,14 @@ make prereg-pack         # prereg bundle (no raw data)
 make prereg-pack-data    # prereg bundle (with raw data)
 make zenodo-pack         # Zenodo bundle (no raw data)
 make zenodo-pack-data    # Zenodo bundle (with raw data)
+
+
+@misc{russell2025plr,
+  author       = {Ryan D. Russell},
+  title        = {The Principle of Least Resistance: A Unified Framework for Physics from First Principles},
+  year         = {2025},
+  publisher    = {Zenodo},
+  version      = {v0.1.0},
+  doi          = {10.5281/zenodo.XXXXXXX},
+  url          = {https://doi.org/10.5281/zenodo.XXXXXXX}
+}
