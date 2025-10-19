@@ -112,8 +112,10 @@ def main():
         sys.exit(1)
     
     all_ok = True
-    for archive in archives:
-        print(f"\n=== Verifying {archive} ===")
+    for i, archive in enumerate(archives):
+        if i > 0:
+            print()  # blank line between archives
+        print(f"=== Verifying {archive} ===")
         ok = verify_archive(archive)
         all_ok = all_ok and ok
     
