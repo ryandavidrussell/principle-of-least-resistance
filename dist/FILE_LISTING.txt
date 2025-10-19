@@ -1,0 +1,12 @@
+plr-prl/Makefile
+plr-prl/README.md
+plr-prl/dist/CITATION.cff
+plr-prl/dist/README_packaging.md
+plr-prl/dist/zenodo.json
+plr-prl/reports/check_summary.csv
+plr-prl/scripts/check_summary.py
+plr-prl/scripts/make_checksums.py
+plr-prl/scripts/prereg_pack.py
+plr-prl/scripts/verify_archive.py
+plr-prl/scripts/zenodo_pack.py
+plr-prl/scripts/zenodo_preflight.py
