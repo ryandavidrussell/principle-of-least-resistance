@@ -6,7 +6,7 @@ Reads checksums from reports/checksums_SHA256*.txt and compares to extracted fil
 Usage:
   python scripts/verify_archive.py dist/plr_zenodo_<tag>.zip
 """
-import sys, os, zipfile, hashlib
+import sys, os, pathlib, zipfile, hashlib
 
 def sha256_bytes(b: bytes) -> str:
     h = hashlib.sha256()

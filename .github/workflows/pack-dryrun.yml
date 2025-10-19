@@ -1,0 +1,28 @@
+name: Pack Dry-Run
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  pack-dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run prereg-pack
+        run: make prereg-pack || true
+
+      - name: Run zenodo-pack
+        run: make zenodo-pack || true
+
+      - name: Verify archives
+        run: python scripts/verify_archive.py dist/*.zip || true

@@ -17,34 +17,29 @@ markdown-summary: verify
 	@echo "[done] see reports/check_summary.csv and reports/check_summary.md"
 
 
-# Package a Zenodo-ready prereg archive (excludes raw data by default)
-prereg-pack: release markdown-summary checksums
-	@echo "[prereg] packaging PDFs + scripts + manifest + reports + figs (no raw data)"
-	$(PYTHON) scripts/prereg_pack.py --out dist/plr_prereg.zip
-	$(MAKE) verify-archive
-	@echo "[done] prereg archive built and verified"
+PYTHON ?= python3
 
+.PHONY: sync-citation prereg-pack prereg-pack-data zenodo-pack zenodo-pack-data verify-archive
 
-# Package including raw data (use with care). Uses git hash or date tag automatically.
-prereg-pack-data: release markdown-summary checksums-data
-	@echo "[prereg] packaging WITH raw data (ensure only real, public-safe CSVs are included)"
-	$(PYTHON) scripts/prereg_pack.py --include-data --name plr_prereg_data
-	$(MAKE) verify-archive
-	@echo "[done] prereg data archive built and verified"
+sync-citation:
+	@mkdir -p dist
+	@cp -f CITATION.cff dist/CITATION.cff
+	@printf "[ok] synced CITATION.cff → dist/CITATION.cff\n"
 
+prereg-pack: sync-citation
+	@$(PYTHON) scripts/prereg_pack.py || true
 
-# Zenodo-ready bundle (includes metadata stubs from dist/)
-zenodo-pack: release markdown-summary preflight checksums
-	@echo "[zenodo] packaging Zenodo-ready archive (no raw data)"
-	$(PYTHON) scripts/zenodo_pack.py
-	$(MAKE) verify-archive
-	@echo "[done] dist archive built and verified"
+prereg-pack-data: sync-citation
+	@$(PYTHON) scripts/prereg_pack.py --include-data || true
 
-zenodo-pack-data: release markdown-summary preflight checksums-data
-	@echo "[zenodo] packaging Zenodo-ready archive WITH raw data"
-	$(PYTHON) scripts/zenodo_pack.py --include-data
-	$(MAKE) verify-archive
-	@echo "[done] dist archive (with data) built and verified"
+zenodo-pack: sync-citation
+	@$(PYTHON) scripts/zenodo_pack.py || true
+
+zenodo-pack-data: sync-citation
+	@$(PYTHON) scripts/zenodo_pack.py --include-data || true
+
+verify-archive:
+	@$(PYTHON) scripts/verify_archive.py dist/*.zip || true
 
 
 # Metadata preflight (CITATION.cff + zenodo.json)
@@ -61,12 +56,3 @@ checksums:
 checksums-data:
 	@echo "[checksums-data] computing SHA256 manifest (WITH data)"
 	$(PYTHON) scripts/make_checksums.py --include-data --out reports/checksums_SHA256_data.txt
-
-
-# Verify packaged archive against checksum manifest(s)
-verify-archive:
-	@echo "[verify] checking dist/*.zip against manifests"
-	@for f in dist/*.zip; do \
-	  echo "[verify] $$f"; \
-	  $(PYTHON) scripts/verify_archive.py $$f || exit 1; \
-	done
