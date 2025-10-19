@@ -1,0 +1,38 @@
+name: Pack Dry-Run
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pack-dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run sync-citation
+        run: make sync-citation || true
+
+      - name: Run prereg-pack (dry-run, allow failure)
+        run: make prereg-pack || true
+        continue-on-error: true
+
+      - name: Run zenodo-pack (dry-run, allow failure)
+        run: make zenodo-pack || true
+        continue-on-error: true
+
+      - name: Verify archives (if created)
+        run: |
+          if ls dist/*.zip 1> /dev/null 2>&1; then
+            python scripts/verify_archive.py dist/*.zip || true
+          else
+            echo "[info] No archives created (expected if PDFs missing)"
+          fi
+        continue-on-error: true
