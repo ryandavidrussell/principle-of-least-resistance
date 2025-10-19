@@ -1,0 +1,32 @@
+{
+  "title": "The Principle of Least Resistance: A Unified Framework for Physics from First Principles",
+  "upload_type": "publication",
+  "publication_type": "article",
+  "description": "This record contains the preregistered supplemental material for *The Principle of Least Resistance: A Unified Framework for Physics from First Principles*. The archive includes figures, PDFs, manifests, and scripts required to reproduce the analyses.\n\n**Data Availability and Verification.\u2014**  \nAll supplemental bundles are provided as self-verifying archives. Each file is accompanied by a SHA256 checksum manifest, and integrity can be confirmed by running the included script (`make verify-archive`) or manually with `sha256sum -c`. Packaging is declared complete only when all files pass verification, ensuring referees and readers can independently confirm the consistency of the material.",
+  "creators": [
+    {
+      "name": "Russell, Ryan D.",
+      "affiliation": "Independent Researcher, Greenville, SC, USA",
+      "orcid": "0000-0002-1234-5678"
+    }
+  ],
+  "keywords": [
+    "physics",
+    "discrete scale invariance",
+    "golden ratio",
+    "quantum field theory",
+    "grand unification"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "arXiv:XXXX.XXXXX"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "dist/README_packaging.md"
+    }
+  ]
+}
