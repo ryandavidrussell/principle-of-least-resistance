@@ -71,11 +71,19 @@ def main():
             fp = ROOT / f
             if fp.exists():
                 zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
-        # README*
+        # README* (excluding README_packaging.md which comes from dist)
         for fp in ROOT.glob("README*"):
-            zf.write(fp, arcname=str(pathlib.Path("plr-prl") / fp.name))
-        # Metadata from dist
-        for f in ["CITATION.cff","zenodo.json"]:
+            if fp.name != "README_packaging.md":
+                zf.write(fp, arcname=str(pathlib.Path("plr-prl") / fp.name))
+        # Metadata from dist (with fallback for CITATION.cff)
+        # CITATION.cff: prefer dist/, fallback to root
+        citation_src = ROOT / "dist" / "CITATION.cff"
+        if not citation_src.exists():
+            citation_src = ROOT / "CITATION.cff"
+        if citation_src.exists():
+            zf.write(citation_src, arcname=str(pathlib.Path("plr-prl") / "CITATION.cff"))
+        # Other dist metadata files
+        for f in ["zenodo.json", "README_packaging.md", "FILE_LISTING.txt"]:
             fp = ROOT / "dist" / f
             if fp.exists():
                 zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
@@ -83,13 +91,17 @@ def main():
         rep = ROOT / "reports"
         if rep.exists():
             add_dir(zf, rep, pathlib.Path("plr-prl"))
-        add_dir(zf, ROOT / "scripts", pathlib.Path("plr-prl"))
+        scripts_dir = ROOT / "scripts"
+        if scripts_dir.exists():
+            add_dir(zf, scripts_dir, pathlib.Path("plr-prl"))
         figs = ROOT / "figs"
         if figs.exists():
             add_dir(zf, figs, pathlib.Path("plr-prl"), exclude_ext=(".png",".jpg",".jpeg"))
         # Data optional
-        if args.include_data and (ROOT / "data").exists():
-            add_dir(zf, ROOT / "data", pathlib.Path("plr-prl"))
+        if args.include_data:
+            data_dir = ROOT / "data"
+            if data_dir.exists():
+                add_dir(zf, data_dir, pathlib.Path("plr-prl"))
 
     print(f"[OK] wrote {out}")
 

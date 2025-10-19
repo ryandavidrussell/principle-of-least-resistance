@@ -17,8 +17,16 @@ markdown-summary: verify
 	@echo "[done] see reports/check_summary.csv and reports/check_summary.md"
 
 
+# Sync root CITATION.cff into dist/
+.PHONY: sync-citation
+sync-citation:
+	@mkdir -p dist
+	@cp -f CITATION.cff dist/CITATION.cff
+	@printf "[ok] synced CITATION.cff → dist/CITATION.cff\n"
+
+
 # Package a Zenodo-ready prereg archive (excludes raw data by default)
-prereg-pack: release markdown-summary checksums
+prereg-pack: release markdown-summary checksums sync-citation
 	@echo "[prereg] packaging PDFs + scripts + manifest + reports + figs (no raw data)"
 	$(PYTHON) scripts/prereg_pack.py --out dist/plr_prereg.zip
 	$(MAKE) verify-archive
@@ -26,7 +34,7 @@ prereg-pack: release markdown-summary checksums
 
 
 # Package including raw data (use with care). Uses git hash or date tag automatically.
-prereg-pack-data: release markdown-summary checksums-data
+prereg-pack-data: release markdown-summary checksums-data sync-citation
 	@echo "[prereg] packaging WITH raw data (ensure only real, public-safe CSVs are included)"
 	$(PYTHON) scripts/prereg_pack.py --include-data --name plr_prereg_data
 	$(MAKE) verify-archive
@@ -34,13 +42,13 @@ prereg-pack-data: release markdown-summary checksums-data
 
 
 # Zenodo-ready bundle (includes metadata stubs from dist/)
-zenodo-pack: release markdown-summary preflight checksums
+zenodo-pack: release markdown-summary preflight checksums sync-citation
 	@echo "[zenodo] packaging Zenodo-ready archive (no raw data)"
 	$(PYTHON) scripts/zenodo_pack.py
 	$(MAKE) verify-archive
 	@echo "[done] dist archive built and verified"
 
-zenodo-pack-data: release markdown-summary preflight checksums-data
+zenodo-pack-data: release markdown-summary preflight checksums-data sync-citation
 	@echo "[zenodo] packaging Zenodo-ready archive WITH raw data"
 	$(PYTHON) scripts/zenodo_pack.py --include-data
 	$(MAKE) verify-archive
