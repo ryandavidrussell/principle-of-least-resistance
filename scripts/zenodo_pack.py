@@ -8,16 +8,23 @@ Usage:
 
 Contents:
   - PDFs: main.pdf, supplemental.pdf
-  - Metadata: dist/CITATION.cff, dist/zenodo.json (if present)
+  - Metadata: dist/CITATION.cff, dist/zenodo.json, dist/FILE_LISTING.txt, dist/README_packaging.md
   - Manifest + build files: manifest.yaml, Makefile, latexmkrc, plr.bib, README*
   - Reports/: CSV+MD summaries
   - Scripts/: builders and checks
   - Figs/: PDFs
   - Data/: (optional with --include-data)
 """
-import argparse, os, pathlib, zipfile, subprocess, datetime, sys
+import argparse, pathlib, zipfile, subprocess, datetime, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+def maybe_add(zf, src, arcname):
+    """Add file to archive if it exists."""
+    if src.exists():
+        zf.write(src, arcname=str(arcname))
+        return True
+    return False
 
 def detect_git_tag():
     try:
@@ -36,16 +43,21 @@ def detect_git_tag():
         return None
 
 def add_dir(zf, base, relroot, exclude_ext=(), exclude_names=()):
-    for dirpath, dirnames, filenames in os.walk(base):
-        dirnames[:] = [d for d in dirnames if d not in ("__pycache__",) and not d.startswith(".")]
-        for fn in filenames:
-            if fn in exclude_names:
+    """Recursively add directory contents to archive."""
+    base_path = pathlib.Path(base)
+    if not base_path.exists():
+        return
+    for item in base_path.rglob("*"):
+        if item.is_file():
+            # Skip hidden files and __pycache__
+            if any(part.startswith(".") or part == "__pycache__" for part in item.parts):
                 continue
-            if exclude_ext and any(fn.lower().endswith(ext.lower()) for ext in exclude_ext):
+            if item.name in exclude_names:
                 continue
-            full = pathlib.Path(dirpath) / fn
-            arc = relroot / full.relative_to(ROOT)
-            zf.write(full, arcname=str(arc))
+            if exclude_ext and any(item.name.lower().endswith(ext.lower()) for ext in exclude_ext):
+                continue
+            arc = relroot / item.relative_to(ROOT)
+            zf.write(item, arcname=str(arc))
 
 def main():
     ap = argparse.ArgumentParser()
@@ -66,30 +78,34 @@ def main():
         sys.exit(1)
 
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
+        arcroot = pathlib.Path("plr-prl")
+        
         # Root build files
-        for f in ["main.pdf","supplemental.pdf","manifest.yaml","Makefile","latexmkrc","plr.bib"]:
-            fp = ROOT / f
-            if fp.exists():
-                zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
+        for f in ["main.pdf", "supplemental.pdf", "manifest.yaml", "Makefile", "latexmkrc", "plr.bib"]:
+            maybe_add(zf, ROOT / f, arcroot / f)
+        
         # README*
         for fp in ROOT.glob("README*"):
-            zf.write(fp, arcname=str(pathlib.Path("plr-prl") / fp.name))
-        # Metadata from dist
-        for f in ["CITATION.cff","zenodo.json"]:
-            fp = ROOT / "dist" / f
-            if fp.exists():
-                zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
+            maybe_add(zf, fp, arcroot / fp.name)
+        
+        # Metadata from dist/ with fallbacks
+        # CITATION.cff: prefer dist/CITATION.cff, fall back to root/CITATION.cff
+        if not maybe_add(zf, ROOT / "dist" / "CITATION.cff", arcroot / "CITATION.cff"):
+            maybe_add(zf, ROOT / "CITATION.cff", arcroot / "CITATION.cff")
+        
+        # Other metadata files from dist/
+        maybe_add(zf, ROOT / "dist" / "zenodo.json", arcroot / "zenodo.json")
+        maybe_add(zf, ROOT / "dist" / "README_packaging.md", arcroot / "README_packaging.md")
+        maybe_add(zf, ROOT / "dist" / "FILE_LISTING.txt", arcroot / "FILE_LISTING.txt")
+        
         # Reports, Scripts, Figs
-        rep = ROOT / "reports"
-        if rep.exists():
-            add_dir(zf, rep, pathlib.Path("plr-prl"))
-        add_dir(zf, ROOT / "scripts", pathlib.Path("plr-prl"))
-        figs = ROOT / "figs"
-        if figs.exists():
-            add_dir(zf, figs, pathlib.Path("plr-prl"), exclude_ext=(".png",".jpg",".jpeg"))
+        add_dir(zf, ROOT / "reports", arcroot)
+        add_dir(zf, ROOT / "scripts", arcroot)
+        add_dir(zf, ROOT / "figs", arcroot, exclude_ext=(".png", ".jpg", ".jpeg"))
+        
         # Data optional
-        if args.include_data and (ROOT / "data").exists():
-            add_dir(zf, ROOT / "data", pathlib.Path("plr-prl"))
+        if args.include_data:
+            add_dir(zf, ROOT / "data", arcroot)
 
     print(f"[OK] wrote {out}")
 
