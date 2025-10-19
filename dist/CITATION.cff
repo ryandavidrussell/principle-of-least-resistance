@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below. Supplemental archive is integrity-verified via SHA256 manifests."
+title: "The Principle of Least Resistance: A Unified Framework for Physics from First Principles (Integrity-Verified Supplemental Archive)"
+authors:
+  - family-names: Russell
+    given-names: Ryan D.
+    affiliation: Independent Researcher, Greenville, SC, USA
+    orcid: "0000-0002-1234-5678"
+date-released: 2025-10-18
+version: 0.1.0
+doi: 10.5281/zenodo.XXXXXXX
+license: MIT
+repository-code: "https://github.com/horizon-code/plr-prl"
