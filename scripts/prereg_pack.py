@@ -71,6 +71,12 @@ def main():
             fp = ROOT / f
             if fp.exists():
                 zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
+        # Include metadata files from dist/ if present
+        dist_metadata = ["CITATION.cff", "zenodo.json", "README_packaging.md", "FILE_LISTING.txt"]
+        for f in dist_metadata:
+            fp = ROOT / "dist" / f
+            if fp.exists():
+                zf.write(fp, arcname=str(pathlib.Path("plr-prl") / f))
         rep = ROOT / "reports"
         if rep.exists():
             add_dir(zf, rep, pathlib.Path("plr-prl"))

@@ -6,7 +6,9 @@ Reads checksums from reports/checksums_SHA256*.txt and compares to extracted fil
 Usage:
   python scripts/verify_archive.py dist/plr_zenodo_<tag>.zip
 """
-import sys, os, zipfile, hashlib
+import sys, os, zipfile, hashlib, pathlib
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 def sha256_bytes(b: bytes) -> str:
     h = hashlib.sha256()
@@ -35,16 +37,17 @@ def main():
         sys.exit(1)
     # locate manifest(s)
     manfiles=[]
-    for fn in ("reports/checksums_SHA256.txt","reports/checksums_SHA256_data.txt"):
-        if os.path.isfile(fn):
-            manfiles.append(fn)
+    for fn in ("checksums_SHA256.txt","checksums_SHA256_data.txt"):
+        manifest_path = ROOT / "reports" / fn
+        if manifest_path.is_file():
+            manfiles.append(manifest_path)
     if not manfiles:
         print("[fail] no checksum manifests found", file=sys.stderr)
         sys.exit(1)
     # combine
     all_checksums={}
     for mf in manfiles:
-        with open(mf,"r",encoding="utf-8") as fh:
+        with open(mf, "r", encoding="utf-8") as fh:
             all_checksums.update(load_manifest(fh.readlines()))
     # open archive
     zf=zipfile.ZipFile(archive,"r")
