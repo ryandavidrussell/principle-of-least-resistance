@@ -1,0 +1,37 @@
+name: Pack Dry-Run
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Run prereg-pack
+        run: make prereg-pack || true
+      
+      - name: Run zenodo-pack
+        run: make zenodo-pack || true
+      
+      - name: Verify archives
+        run: python scripts/verify_archive.py dist/*.zip || true
+      
+      - name: Upload dist zips
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-zips
+          path: dist/*.zip
+          if-no-files-found: ignore
